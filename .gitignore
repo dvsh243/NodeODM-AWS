@@ -46,3 +46,5 @@ package-lock.json
 apps/
 nodeodm.exe
 dist/
+
+.env

@@ -35,6 +35,16 @@ const request = require('request');
 const utils = require('./utils');
 const archiver = require('archiver');
 
+const AWS = require('aws-sdk');
+const mime = require('mime');
+
+const s3 = new AWS.S3({
+    region: 'ap-south-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+logger.info("AWS S3 Connected.")
+
 const statusCodes = require('./statusCodes');
 
 module.exports = class Task{
@@ -306,32 +316,51 @@ module.exports = class Task{
             const createZipArchive = (outputFilename, files) => {
                 return (done) => {
                     this.output.push(`Compressing ${outputFilename}\n`);
-
+            
                     const zipFile = path.resolve(this.getAssetsArchivePath(outputFilename));
                     const sourcePath = !config.test ? 
                                         this.getProjectFolderPath() : 
                                         path.join("tests", "processing_results");
-
+            
                     const pathsToArchive = [];
                     files.forEach(f => {
                         if (fs.existsSync(path.join(sourcePath, f))){
                             pathsToArchive.push(f);
                         }
                     });
-
+            
                     processRunner.sevenZip({
                         destination: zipFile,
                         pathsToArchive,
                         cwd: sourcePath
-                    }, (err, code, _) => {
-                        if (err){
+                    }, async (err, code, _) => {
+                        if (err) {
                             logger.error(`Could not archive .zip file: ${err.message}`);
                             done(err);
-                        }else{
-                            if (code === 0){
+                        } else {
+                            if (code === 0) {
                                 this.updateProgress(97);
-                                done();
-                            }else done(new Error(`Could not archive .zip file, 7z exited with code ${code}`));
+            
+                                // Upload the zip file to S3
+                                try {
+                                    const fileContent = fs.readFileSync(zipFile);
+                                    const params = {
+                                        Bucket: 'node-odm-test-bucket', // replace with your S3 bucket name
+                                        Key: `uploads/${outputFilename}`, // S3 path
+                                        Body: fileContent,
+                                        ContentType: mime.getType(zipFile)
+                                    };
+            
+                                    await s3.upload(params).promise();
+                                    logger.info(`${outputFilename} uploaded to AWS S3 successfully`);
+                                    done();
+                                } catch (s3Err) {
+                                    logger.error(`Failed to upload ${outputFilename} to AWS S3: ${s3Err.message}`);
+                                    done(s3Err);
+                                }
+                            } else {
+                                done(new Error(`Could not archive .zip file, 7z exited with code ${code}`));
+                            }
                         }
                     });
                 };
