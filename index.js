@@ -252,14 +252,32 @@ let commands = [
         taskManager = TaskManager.singleton();
     },
     cb => {
-        const startServer = async (port, cb) => {
-            server = app.listen(parseInt(port), async (err) => {
+        const startServer = (port, cb) => {
+            server = app.listen(parseInt(port), (err) => {
                 if (!err) {
                     logger.info('Server has started on port ' + String(port))
 
                     // hit api endpoints to start a task here, take info from environment variables
-                    const response = await axios.get(`/task/new/init`);
+
+                    // hitting the first api to get uuid
+                    let config = {
+                        method: 'post',
+                        maxBodyLength: Infinity,
+                        url: '/task/new/init',
+                        headers: { ...data.getHeaders() },
+                        data : data
+                    };
+                      
+                    axios.request(config).then((response) => {
+                        console.log(JSON.stringify(response.data));
+                    }).catch((error) => {
+                        console.log(error);
+                    });
+                      
                     logger.info(`1/3 API endpoint hit successfully: ${response.data}`)
+
+
+                    // hitting the 2nd api to upload images
 
                     logger.info('all api endpoints have been hit, get down!')
                 };
