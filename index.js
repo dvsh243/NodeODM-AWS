@@ -269,7 +269,7 @@ let commands = [
                     let config = {
                         method: 'post',
                         maxBodyLength: Infinity,
-                        url: '/task/new/init',
+                        url: '/task/new/init?token=',
                         headers: { ...data.getHeaders() },
                         data : data
                     };
