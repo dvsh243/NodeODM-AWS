@@ -34,6 +34,17 @@ app.use('/swagger.json', express.static('docs/swagger.json'));
 const axios = require('axios');
 const FormData = require('form-data');
 
+
+// dont need to connect to this again, find a way to import s3 from Task.js
+const AWS = require('aws-sdk');
+
+const s3 = new AWS.S3({
+    region: 'ap-south-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+logger.info("AWS S3 Connected at index.js.")
+
 const formDataParser = multer().none();
 const urlEncodedBodyParser = bodyParser.urlencoded({extended: false});
 const jsonBodyParser = bodyParser.json();
@@ -257,6 +268,7 @@ let commands = [
                 if (!err) {
                     logger.info('Server has started on port ' + String(port))
 
+                    // # - # - # - # - # - # - # - # - # - #
                     // hit api endpoints to start a task here, take info from environment variables
 
                     // hitting the first api to get uuid
@@ -275,9 +287,30 @@ let commands = [
                     };
                       
                     const response = await axios.request(config);
-                    logger.info(`1/3 API endpoint hit successfully: ${response.data}`)
+                    logger.info(`1/3 API endpoint hit successfully: ${JSON.stringify(response.data)}`)
 
+                    // # - # - # - # - # - # - # - # - # - #
+                    // getting the files from s3
+                    
+                    let downloadDir = 'download-dir'
+                    // prefix is also to be provided as environment variable
+                    const listedObjects = await s3.listObjectsV2({Bucket: 'node-odm-test-bucket', Prefix: 'img_data'}).promise();
+                    fs.mkdirSync(downloadDir, { recursive: true });
+
+                    for (const object of listedObjects.Contents) {
+                        const fileKey = object.Key;
+                        const fileName = path.basename(fileKey);
+                        const filePath = path.join(downloadDir, fileName);
+
+                        const data = await s3.getObject(fileParams).promise();
+                        fs.writeFileSync(filePath, data.Body);
+
+                        logger.info(`Downloaded ${fileKey} to ${filePath}`);
+                    }
+
+                    // # - # - # - # - # - # - # - # - # - #
                     // hitting the 2nd api to upload images
+
 
                     logger.info('all api endpoints have been hit, get down!')
                 };
