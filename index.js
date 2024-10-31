@@ -252,8 +252,8 @@ let commands = [
         taskManager = TaskManager.singleton();
     },
     cb => {
-        const startServer = (port, cb) => {
-            server = app.listen(parseInt(port), (err) => {
+        const startServer = async (port, cb) => {
+            server = app.listen(parseInt(port), async (err) => {
                 if (!err) {
                     logger.info('Server has started on port ' + String(port))
 
@@ -261,7 +261,7 @@ let commands = [
 
                     // hitting the first api to get uuid
                     let data = new FormData();
-                    data.append('name', 'api-hit-task');
+                    data.append('name', 'api-task');
                     data.append('webhook', '');
                     data.append('skipPostProcessing', 'True');
                     data.append('options', '[]');
@@ -274,14 +274,8 @@ let commands = [
                         data : data
                     };
                       
-                    axios.request(config).then((response) => {
-                        console.log(JSON.stringify(response.data));
-                    }).catch((error) => {
-                        console.log(error);
-                    });
-                      
+                    await axios.request(config);
                     logger.info(`1/3 API endpoint hit successfully: ${response.data}`)
-
 
                     // hitting the 2nd api to upload images
 
