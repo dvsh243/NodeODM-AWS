@@ -302,7 +302,7 @@ let commands = [
                         const fileName = path.basename(fileKey);
                         const filePath = path.join(downloadDir, fileName);
 
-                        const data = await s3.getObject(fileParams).promise();
+                        const data = await s3.getObject({Bucket: 'node-odm-test-bucket', Key: fileKey}).promise();
                         fs.writeFileSync(filePath, data.Body);
 
                         logger.info(`Downloaded ${fileKey} to ${filePath}`);
