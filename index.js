@@ -274,7 +274,7 @@ let commands = [
                         data : data
                     };
                       
-                    await axios.request(config);
+                    const response = await axios.request(config);
                     logger.info(`1/3 API endpoint hit successfully: ${response.data}`)
 
                     // hitting the 2nd api to upload images
