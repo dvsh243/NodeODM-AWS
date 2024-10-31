@@ -260,6 +260,12 @@ let commands = [
                     // hit api endpoints to start a task here, take info from environment variables
 
                     // hitting the first api to get uuid
+                    let data = new FormData();
+                    data.append('name', 'api-hit-task');
+                    data.append('webhook', '');
+                    data.append('skipPostProcessing', 'True');
+                    data.append('options', '[]');
+
                     let config = {
                         method: 'post',
                         maxBodyLength: Infinity,
