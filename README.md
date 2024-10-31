@@ -41,7 +41,7 @@ docker build -t my_nodeodm_image --no-cache .
 Run as follows:
 
 ```
-docker run -p 3000:3000 my_nodeodm_image &
+docker run --env-file .env -p 3000:3000 my_nodeodm_image
 ```
 
 
