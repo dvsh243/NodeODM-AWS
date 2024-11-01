@@ -279,12 +279,12 @@ let commands = [
                     // # - # - # - # - # - # - # - # - # - #
                     // getting the files from s3
                     
-                    await download_s3_files()
+                    await download_s3_files(response_uuid)
 
                     // # - # - # - # - # - # - # - # - # - #
                     // hitting the 2nd api to upload images
 
-                    await upload_s3_images(response_uuid)
+                    // await upload_s3_images(response_uuid)
                     logger.info(`2/3 API endpoint hit successfully: files uploaded`)
 
 
@@ -355,8 +355,10 @@ async function get_uuid() {
 
 
 
-async function download_s3_files() {
-    let downloadDir = 'download-dir'
+async function download_s3_files(uuid) {
+    // download the files in /tmp/{uuid}
+
+    let downloadDir = `tmp/${uuid}`
     // prefix is also to be provided as environment variable
     const listedObjects = await s3.listObjectsV2({Bucket: 'node-odm-test-bucket', Prefix: '8g93j-images'}).promise();
     fs.mkdirSync(downloadDir, { recursive: true });
@@ -365,6 +367,8 @@ async function download_s3_files() {
         const fileKey = object.Key;
         const fileName = path.basename(fileKey);
         const filePath = path.join(downloadDir, fileName);
+
+        if (!fileName.endsWith('.JPG')) { continue }
 
         const data = await s3.getObject({Bucket: 'node-odm-test-bucket', Key: fileKey}).promise();
         fs.writeFileSync(filePath, data.Body);
