@@ -272,41 +272,14 @@ let commands = [
                     // hit api endpoints to start a task here, take info from environment variables
 
                     // hitting the first api to get uuid
-                    let data = new FormData();
-                    data.append('name', 'api-task');
-                    data.append('webhook', '');
-                    data.append('skipPostProcessing', 'True');
-                    data.append('options', '[]');
-
-                    let config = {
-                        method: 'post',
-                        maxBodyLength: Infinity,
-                        url: 'http://localhost:3000/task/new/init',
-                        headers: { ...data.getHeaders() },
-                        data : data
-                    };
-                      
-                    const response = await axios.request(config);
-                    logger.info(`1/3 API endpoint hit successfully: ${JSON.stringify(response.data)}`)
+                    response_uuid = get_uuid()
+                    logger.info(`1/3 API endpoint hit successfully: ${response_uuid}`)
 
                     // # - # - # - # - # - # - # - # - # - #
                     // getting the files from s3
                     
-                    let downloadDir = 'download-dir'
-                    // prefix is also to be provided as environment variable
-                    const listedObjects = await s3.listObjectsV2({Bucket: 'node-odm-test-bucket', Prefix: 'img_data'}).promise();
-                    fs.mkdirSync(downloadDir, { recursive: true });
-
-                    for (const object of listedObjects.Contents) {
-                        const fileKey = object.Key;
-                        const fileName = path.basename(fileKey);
-                        const filePath = path.join(downloadDir, fileName);
-
-                        const data = await s3.getObject({Bucket: 'node-odm-test-bucket', Key: fileKey}).promise();
-                        fs.writeFileSync(filePath, data.Body);
-
-                        logger.info(`Downloaded ${fileKey} to ${filePath}`);
-                    }
+                    download_s3_files()
+                    logger.info(`2/3 API endpoint hit successfully: files downloaded`)
 
                     // # - # - # - # - # - # - # - # - # - #
                     // hitting the 2nd api to upload images
@@ -350,3 +323,49 @@ async.series(commands, err => {
         process.exit(1);
     }
 });
+
+
+
+
+
+// # - # - # - # - # - # - # - # - # - # - # -
+// # - # FUNCTIONS FOR S3 INTEGRATION # - # - 
+
+async function get_uuid() {
+    let data = new FormData();
+    data.append('name', 'api-task');
+    data.append('webhook', '');
+    data.append('skipPostProcessing', 'True');
+    data.append('options', '[]');
+
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'http://localhost:3000/task/new/init',
+        headers: { ...data.getHeaders() },
+        data : data
+    };
+                      
+    const response = await axios.request(config);
+    return response.data.uuid
+}
+
+
+
+async function download_s3_files() {
+    let downloadDir = 'download-dir'
+    // prefix is also to be provided as environment variable
+    const listedObjects = await s3.listObjectsV2({Bucket: 'node-odm-test-bucket', Prefix: 'img_data'}).promise();
+    fs.mkdirSync(downloadDir, { recursive: true });
+
+    for (const object of listedObjects.Contents) {
+        const fileKey = object.Key;
+        const fileName = path.basename(fileKey);
+        const filePath = path.join(downloadDir, fileName);
+
+        const data = await s3.getObject({Bucket: 'node-odm-test-bucket', Key: fileKey}).promise();
+        fs.writeFileSync(filePath, data.Body);
+
+        logger.info(`Downloaded ${fileKey} to ${filePath}`);
+    }
+}
