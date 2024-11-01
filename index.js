@@ -358,7 +358,7 @@ async function get_uuid() {
 async function download_s3_files() {
     let downloadDir = 'download-dir'
     // prefix is also to be provided as environment variable
-    const listedObjects = await s3.listObjectsV2({Bucket: 'node-odm-test-bucket', Prefix: 'img_data'}).promise();
+    const listedObjects = await s3.listObjectsV2({Bucket: 'node-odm-test-bucket', Prefix: '8g93j-images'}).promise();
     fs.mkdirSync(downloadDir, { recursive: true });
 
     for (const object of listedObjects.Contents) {
