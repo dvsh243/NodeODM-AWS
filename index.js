@@ -37,6 +37,7 @@ const FormData = require('form-data');
 
 // dont need to connect to this again, find a way to import s3 from Task.js
 const AWS = require('aws-sdk');
+const { stringify } = require('querystring');
 
 const s3 = new AWS.S3({
     region: 'ap-south-1',
@@ -272,17 +273,19 @@ let commands = [
                     // hit api endpoints to start a task here, take info from environment variables
 
                     // hitting the first api to get uuid
-                    let response_uuid = get_uuid()
+                    let response_uuid = await get_uuid()
                     logger.info(`1/3 API endpoint hit successfully: ${response_uuid}`)
 
                     // # - # - # - # - # - # - # - # - # - #
                     // getting the files from s3
                     
-                    download_s3_files()
-                    logger.info(`2/3 API endpoint hit successfully: files downloaded`)
+                    await download_s3_files()
 
                     // # - # - # - # - # - # - # - # - # - #
                     // hitting the 2nd api to upload images
+
+                    await upload_s3_images()
+                    logger.info(`2/3 API endpoint hit successfully: files uploaded`)
 
 
                     logger.info('all api endpoints have been hit, get down!')
@@ -368,4 +371,32 @@ async function download_s3_files() {
 
         logger.info(`Downloaded ${fileKey} to ${filePath}`);
     }
+}
+
+async function upload_s3_images(uuid) {
+    let data = new FormData();
+
+    let dirPath = 'download-dir'
+    fs.readdir(dirPath, (err, files) => {
+        if (err) {
+            logger.error('Error reading directory:', err);
+            return;
+        }
+        files
+            .filter(file => file.endsWith('.JPG'))   // not just exclusive to .jpg 
+            .forEach(file => {
+                data.append('images', fs.createReadStream(path.join(dirPath, file)));
+            });
+    });
+
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `http://localhost:3000/task/new/upload/${uuid}`,
+        headers: { ...data.getHeaders() },
+        data : data
+    };
+      
+    let response = await axios.request(config)
+    logger.info(JSON>stringify(response.data))
 }
