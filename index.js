@@ -284,7 +284,7 @@ let commands = [
                     // # - # - # - # - # - # - # - # - # - #
                     // hitting the 2nd api to upload images
 
-                    await upload_s3_images()
+                    await upload_s3_images(response_uuid)
                     logger.info(`2/3 API endpoint hit successfully: files uploaded`)
 
 
