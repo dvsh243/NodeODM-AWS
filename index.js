@@ -385,8 +385,8 @@ async function upload_s3_images(uuid) {
         files
             .filter(file => file.endsWith('.JPG'))   // not just exclusive to .jpg 
             .forEach(file => {
-                logger.info(`reading file ${file.fileName}`)
-                data.append('images', fs.createReadStream(`${dirPath}/${file.fileName}`));
+                logger.info(`reading file ${file}`)
+                data.append('images', fs.createReadStream(`${dirPath}/${file}`));
             });
     });
 
