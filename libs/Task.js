@@ -229,6 +229,7 @@ module.exports = class Task{
         for (let k in extra){
             this.status[k] = extra[k];
         }
+        logger.info(`${code} || ${extra}`)
     }
 
     updateProgress(globalProgress){

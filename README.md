@@ -7,5 +7,5 @@
 
 - to build and update on dockerhub
     ```
-    docker build --no-cache -t my_nodeodm_image . && docker tag my_nodeodm_image:latest devesh243/my_nodeodm_image:latest && docker push devesh243/my_nodeodm_image:latest
+    git pull && docker build --no-cache -t my_nodeodm_image . && docker tag my_nodeodm_image:latest devesh243/my_nodeodm_image:latest && docker push devesh243/my_nodeodm_image:latest
     ```
