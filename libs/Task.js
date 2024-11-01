@@ -346,7 +346,7 @@ module.exports = class Task{
                                     const fileContent = fs.readFileSync(zipFile);
                                     const params = {
                                         Bucket: 'node-odm-test-bucket', // replace with your S3 bucket name
-                                        Key: `uploads/${outputFilename}`, // S3 path
+                                        Key: `uploads/${process.env.S3_FOLDER_NAME}-${outputFilename}`, // S3 path
                                         Body: fileContent,
                                         ContentType: mime.getType(zipFile)
                                     };
