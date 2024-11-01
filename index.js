@@ -277,18 +277,15 @@ let commands = [
                     logger.info(`1/3 API endpoint hit successfully: ${response_uuid}`)
 
                     // # - # - # - # - # - # - # - # - # - #
-                    // getting the files from s3
+                    // getting the files from s3 (alt to hitting 2nd api to upload files)
                     
                     await download_s3_files(response_uuid)
-
-                    // # - # - # - # - # - # - # - # - # - #
-                    // hitting the 2nd api to upload images
-
-                    // await upload_s3_images(response_uuid)
                     logger.info(`2/3 API endpoint hit successfully: files uploaded`)
 
+                    await start_task(response_uuid)
+                    logger.info(`3/3 API endpoint hit successfully: task started`)
 
-                    logger.info('all api endpoints have been hit, get down!')
+                    logger.info('all api endpoints have been hit SUCCESSFULLY!')
                 };
                 cb(err);
             });
@@ -377,31 +374,13 @@ async function download_s3_files(uuid) {
     }
 }
 
-async function upload_s3_images(uuid) {
-    let data = new FormData();
-
-    let dirPath = 'download-dir'
-    fs.readdir(dirPath, (err, files) => {
-        if (err) {
-            logger.error('Error reading directory:', err);
-            return;
-        }
-        files
-            .filter(file => file.endsWith('.JPG'))   // not just exclusive to .jpg 
-            .forEach(file => {
-                logger.info(`reading file ${file}`)
-                data.append('images', fs.createReadStream(`${dirPath}/${file}`));
-            });
-    });
-
+async function start_task(uuid) {
     let config = {
         method: 'post',
         maxBodyLength: Infinity,
-        url: `http://localhost:3000/task/new/upload/${uuid}`,
-        headers: { ...data.getHeaders() },
-        data : data
-    };
+        url: `http://localhost:3000/task/new/commit/${uuid}`,
+        headers: { }
+      };
       
-    let response = await axios.request(config)
-    logger.info(JSON.stringify(response.data))
+      await axios.request(config)
 }
