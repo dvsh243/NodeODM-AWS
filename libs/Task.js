@@ -309,6 +309,7 @@ module.exports = class Task{
         const finished = err => {
             this.updateProgress(100);
             this.stopTrackingProcessingTime();
+            process.exit(0)
             done(err);
         };
         
