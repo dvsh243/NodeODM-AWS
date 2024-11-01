@@ -398,5 +398,5 @@ async function upload_s3_images(uuid) {
     };
       
     let response = await axios.request(config)
-    logger.info(JSON>stringify(response.data))
+    logger.info(JSON.stringify(response.data))
 }
