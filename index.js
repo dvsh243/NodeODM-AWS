@@ -272,7 +272,7 @@ let commands = [
                     // hit api endpoints to start a task here, take info from environment variables
 
                     // hitting the first api to get uuid
-                    response_uuid = get_uuid()
+                    let response_uuid = get_uuid()
                     logger.info(`1/3 API endpoint hit successfully: ${response_uuid}`)
 
                     // # - # - # - # - # - # - # - # - # - #
