@@ -354,12 +354,15 @@ module.exports = class Task{
                                     await s3.upload(params).promise();
                                     logger.info(`${outputFilename} uploaded to AWS S3 successfully`);
                                     done();
+                                    process.exit(0)
                                 } catch (s3Err) {
                                     logger.error(`Failed to upload ${outputFilename} to AWS S3: ${s3Err.message}`);
                                     done(s3Err);
+                                    process.exit(0)
                                 }
                             } else {
                                 done(new Error(`Could not archive .zip file, 7z exited with code ${code}`));
+                                process.exit(0)
                             }
                         }
                     });
